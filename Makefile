@@ -7,6 +7,12 @@ VERSION ?= $(shell git describe --tags)
 
 CONTAINER_CMD ?= docker
 
+ifeq ($(shell sed --version 2>/dev/null | grep -q GNU && echo gnu),gnu)
+	SED_I := sed -i
+else
+	SED_I := sed -i ''
+endif
+
 # CHANNELS define the bundle channels used in the bundle.
 # Add a new line here if you would like to change its default config. (E.g CHANNELS = "candidate,fast,stable")
 # To re-generate a bundle for other specific channels without changing the standard setup, you can:
@@ -94,6 +100,7 @@ undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/confi
 
 OS := $(shell uname -s | tr '[:upper:]' '[:lower:]')
 ARCH := $(shell uname -m | sed -e 's/x86_64/amd64/' -e 's/aarch64/arm64/')
+ARCH2 := $(shell uname -m | sed -e 's/aarch64/arm64/')
 
 .PHONY: kustomize
 KUSTOMIZE = $(shell pwd)/bin/kustomize
@@ -182,3 +189,63 @@ catalog-build: opm ## Build a catalog image.
 .PHONY: catalog-push
 catalog-push: ## Push a catalog image.
 	$(MAKE) docker-push IMG=$(CATALOG_IMG)
+
+.PHONY: kubectl-slice
+KUBECTL_SLICE = $(shell pwd)/bin/kubectl-slice
+kubectl-slice: ## Download kubectl-slice locally if necessary.
+ifeq (,$(wildcard $(KUBECTL_SLICE)))
+ifeq (,$(shell which kubectl-slice 2>/dev/null))
+	@{ \
+	set -e ;\
+	mkdir -p $(dir $(KUBECTL_SLICE)) ;\
+	curl -sSLo - https://github.com/patrickdappollonio/kubectl-slice/releases/download/v1.1.0/kubectl-slice_1.1.0_$(OS)_$(ARCH2).tar.gz | \
+	tar xzf - -C bin/ kubectl-slice ;\
+	}
+else
+KUBECTL_SLICE = $(shell which kubectl-slice)
+endif
+endif
+
+.PHONY: helm
+HELM = $(shell pwd)/bin/helm
+helm: ## Download helm locally if necessary.
+ifeq (,$(wildcard $(HELM)))
+ifeq (,$(shell which helm 2>/dev/null))
+	@{ \
+	set -e ;\
+	mkdir -p $(dir $(HELM)) ;\
+	curl -sSLo - https://get.helm.sh/helm-v3.8.0-$(OS)-$(ARCH).tar.gz | \
+	tar xzf - -C bin/ $(OS)-$(ARCH)/helm ;\
+	mv bin/$(OS)-$(ARCH)/helm bin/helm ;\
+	rmdir bin/$(OS)-$(ARCH) ;\
+	}
+else
+HELM = $(shell which helm)
+endif
+endif
+
+.PHONY: helm-chart
+helm-chart: helm kubectl-slice
+	@echo == KUSTOMIZE ==
+	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
+	cd config/default && $(KUSTOMIZE) edit set namespace ${NAMESPACE}
+
+	@echo == HELM ==
+	cd charts && \
+		$(HELM) create awx-operator --starter $(shell pwd)/helm-starter/starter
+	cd charts && \
+		$(SED_I) -e 's/version: 0.1.0/version: $(VERSION)/' awx-operator/Chart.yaml ;\
+		$(SED_I) -e 's/appVersion: 0.1.0/appVersion: "$(VERSION)"/' awx-operator/Chart.yaml ;\
+		$(SED_I) -e 's/A Helm chart for Kubernetes/A Helm chart for AWX Operator/' awx-operator/Chart.yaml
+	cat charts/awx-operator/Chart.yaml
+
+	@echo == KUSTOMIZE ==
+	$(KUSTOMIZE) build config/default | \
+		./bin/kubectl-slice --input-file=- \
+			--output-dir=charts/awx-operator/templates \
+			--sort-by-kind
+	tree charts
+
+# sed -i '' -e 's/version: 0.1.0/version: $(VERSION)/' awx-operator/Chart.yaml ;\
+# sed -i '' -e 's/appVersion: 0.1.0/appVersion: "$(VERSION)"/' awx-operator/Chart.yaml ;\
+# sed -i '' -e 's/A Helm chart for Kubernetes/A Helm chart for AWX Operator/' awx-operator/Chart.yaml ;
