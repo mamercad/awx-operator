@@ -1,0 +1,50 @@
+name: helm-chart
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
+      - name: Install Helm
+        uses: azure/setup-helm@v1
+        with:
+          version: v3.7.1
+
+      - name: Get latest (semver) tag
+        uses: actions-ecosystem/action-get-latest-tag@v1
+        id: get-latest-tag
+        with:
+          semver_only: true
+
+      - name: Make Helm Chart
+        env:
+          VERSION: ${{ steps.get-latest-tag.outputs.tag }}
+        run: |
+          make helm-chart
+
+      - name: Commit Helm Chart
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.get-latest-tag.outputs.tag }}
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+          git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
+          git checkout -b helm-${VERSION}
+          git add charts
+          git commit -m "Helm Chart $VERSION"
+          git push origin helm-${VERSION}
