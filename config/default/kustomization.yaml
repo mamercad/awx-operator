@@ -22,3 +22,5 @@ resources:
 - ../crd
 - ../rbac
 - ../manager
+commonAnnotations:
+  helm.sh/chart: awx-operator-0.18.13
