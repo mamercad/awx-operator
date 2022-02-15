@@ -11,4 +11,4 @@ kind: Kustomization
 images:
 - name: controller
   newName: quay.io/ansible/awx-operator
-  newTag: 0.16.1-27-g7002131
+  newTag: 0.16.1-29-gda3361f

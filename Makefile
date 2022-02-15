@@ -225,7 +225,7 @@ helm-chart: helm
 	cd config/default && $(KUSTOMIZE) edit set namespace ${NAMESPACE}
 	{ \
 	cd helm &&\
-	$(HELM) create awx-operator --starter $(shell pwd)/helm/starter &&\
+	$(HELM) create awx-operator --starter $(shell pwd)/../helm-starter/starter &&\
 	sed -i '' -e 's/version: 0.1.0/version: $(VERSION_ABBREV0)/' awx-operator/Chart.yaml ;\
 	sed -i '' -e 's/appVersion: 0.1.0/appVersion: "$(VERSION)"/' awx-operator/Chart.yaml ;\
 	sed -i '' -e 's/A Helm chart for Kubernetes/A Helm chart for AWX Operator/' awx-operator/Chart.yaml ;\
