@@ -4,6 +4,7 @@
 # - use the VERSION as arg of the bundle target (e.g make bundle VERSION=0.0.2)
 # - use environment variables to overwrite this value (e.g export VERSION=0.0.2)
 VERSION ?= $(shell git describe --tags)
+VERSION_ABBREV0 ?= $(shell git describe --tags --abbrev=0)
 
 CONTAINER_CMD ?= docker
 
@@ -94,6 +95,7 @@ undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/confi
 
 OS := $(shell uname -s | tr '[:upper:]' '[:lower:]')
 ARCH := $(shell uname -m | sed -e 's/x86_64/amd64/' -e 's/aarch64/arm64/')
+ARCH2 := $(shell uname -m | sed -e 's/aarch64/arm64/')
 
 .PHONY: kustomize
 KUSTOMIZE = $(shell pwd)/bin/kustomize
@@ -182,3 +184,53 @@ catalog-build: opm ## Build a catalog image.
 .PHONY: catalog-push
 catalog-push: ## Push a catalog image.
 	$(MAKE) docker-push IMG=$(CATALOG_IMG)
+
+.PHONY: kubectl-slice
+KUBECTL_SLICE = $(shell pwd)/bin/kubectl-slice
+kubectl-slice: ## Download kubectl-slice locally if necessary.
+ifeq (,$(wildcard $(KUBECTL_SLICE)))
+ifeq (,$(shell which kubectl-slice 2>/dev/null))
+	@{ \
+	set -e ;\
+	mkdir -p $(dir $(KUBECTL_SLICE)) ;\
+	curl -sSLo - https://github.com/patrickdappollonio/kubectl-slice/releases/download/v1.1.0/kubectl-slice_1.1.0_$(OS)_$(ARCH2).tar.gz | \
+	tar xzf - -C bin/ kubectl-slice ;\
+	}
+else
+KUBECTL_SLICE = $(shell which kubectl-slice)
+endif
+endif
+
+.PHONY: helm
+HELM = $(shell pwd)/bin/helm
+helm: ## Download helm locally if necessary.
+ifeq (,$(wildcard $(HELM)))
+ifeq (,$(shell which helm 2>/dev/null))
+	@{ \
+	set -e ;\
+	mkdir -p $(dir $(HELM)) ;\
+	curl -sSLo - https://get.helm.sh/helm-v3.8.0-$(OS)-$(ARCH).tar.gz | \
+	tar xzf - -C bin/ $(OS)-$(ARCH)/helm ;\
+	mv bin/$(OS)-$(ARCH)/helm bin/helm ;\
+	rmdir bin/$(OS)-$(ARCH) ;\
+	}
+else
+HELM = $(shell which helm)
+endif
+endif
+
+.PHONY: helm-chart
+helm-chart: helm
+	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
+	cd config/default && $(KUSTOMIZE) edit set namespace ${NAMESPACE}
+	{ \
+	cd helm &&\
+	$(HELM) create awx-operator --starter $(shell pwd)/helm/starter &&\
+	sed -i '' -e 's/version: 0.1.0/version: $(VERSION_ABBREV0)/' awx-operator/Chart.yaml ;\
+	sed -i '' -e 's/appVersion: 0.1.0/appVersion: "$(VERSION)"/' awx-operator/Chart.yaml ;\
+	sed -i '' -e 's/A Helm chart for Kubernetes/A Helm chart for AWX Operator/' awx-operator/Chart.yaml ;\
+	}
+	$(KUSTOMIZE) build config/default | \
+		./bin/kubectl-slice --input-file=- \
+			--output-dir=helm/awx-operator/templates \
+			--sort-by-kind
