@@ -1,11 +1,9 @@
-name: release-helm-chart
+name: helm-release
 
 on:
   push:
     branches:
-      - helm
-    # tags:
-    #   - '*'
+      - 'helm-*'
 
 jobs:
   release:
