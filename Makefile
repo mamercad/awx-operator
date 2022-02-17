@@ -239,6 +239,7 @@ helm-chart: helm kubectl-slice
 		$(SED_I) -e 's/appVersion: 0.1.0/appVersion: "$(VERSION)"/' awx-operator/Chart.yaml ;\
 		$(SED_I) -e 's/A Helm chart for Kubernetes/A Helm chart for AWX Operator/' awx-operator/Chart.yaml
 	cat charts/awx-operator/Chart.yaml
+	echo "Helm Chart $(VERSION)" > awx-operator/templates/NOTES.txt
 
 	@echo == KUSTOMIZE ==
 	$(KUSTOMIZE) build config/default | \
