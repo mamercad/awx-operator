@@ -241,11 +241,11 @@ helm-chart: helm kubectl-slice
 	cat charts/awx-operator/Chart.yaml
 
 	@echo == KUSTOMIZE ==
+	@cd config/manager && $(KUSTOMIZE) edit add annotation helm.sh/chart:awx-operator-$(VERSION)
+	@cd config/default && $(KUSTOMIZE) edit add annotation helm.sh/chart:awx-operator-$(VERSION)
 	$(KUSTOMIZE) build config/default | \
 		./bin/kubectl-slice --input-file=- \
 			--output-dir=charts/awx-operator/templates \
 			--sort-by-kind
-	@cd config/manager && $(KUSTOMIZE) edit add annotation helm.sh/chart:awx-operator-$(VERSION)
-	@cd config/default && $(KUSTOMIZE) edit add annotation helm.sh/chart:awx-operator-$(VERSION)
 	echo "Helm Chart $(VERSION)" > charts/awx-operator/templates/NOTES.txt
 	tree charts
