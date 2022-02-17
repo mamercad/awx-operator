@@ -1,11 +1,12 @@
 name: helm-chart
 
-on: workflow_dispatch
+on:
+  push:
+    tags:
+      - '*'
 #   push:
 #     branches:
 #       - helm
-#     # tags:
-#     #   - '*'
 
 jobs:
   release:
