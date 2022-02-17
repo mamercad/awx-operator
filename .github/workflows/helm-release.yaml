@@ -1,6 +1,9 @@
 name: helm-release
 
 on:
+  create:
+    branches:
+      - 'helm-*'
   push:
     branches:
       - 'helm-*'
