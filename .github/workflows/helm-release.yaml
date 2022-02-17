@@ -4,9 +4,9 @@ on:
   create:
     branches:
       - 'helm-*'
-  # push:
-  #   branches:
-  #     - 'helm-*'
+  push:
+    branches:
+      - 'helm-*'
 
 jobs:
   release:
