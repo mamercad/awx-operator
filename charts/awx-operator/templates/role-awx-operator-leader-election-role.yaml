@@ -2,7 +2,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   annotations:
-    helm.sh/chart: awx-operator-0.18.13
+    helm.sh/chart: awx-operator-0.17.1
   name: awx-operator-leader-election-role
   namespace: awx
 rules:
