@@ -8,7 +8,7 @@ Helm's [documentation](https://helm.sh/docs) to get started.
 Once Helm has been set up correctly, add the repo as follows:
 
 ```bash
-helm repo add awx-operator https://awx-operator.github.io/helm-charts
+helm repo add awx-operator https://mamercad.github.io/awx-operator/
 ```
 
 If you had already added this repo earlier, run `helm repo update` to retrieve
