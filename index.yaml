@@ -2,6 +2,16 @@ apiVersion: v1
 entries:
   awx-operator:
   - apiVersion: v2
+    appVersion: 0.18.13
+    created: "2022-02-18T01:12:21.091856361Z"
+    description: A Helm chart for AWX Operator
+    digest: cff3636a2513289e5cc5b91847a3a0b4405c1ea8b0996b66850063056e812346
+    name: awx-operator
+    type: application
+    urls:
+    - https://github.com/mamercad/awx-operator/releases/download/awx-operator-0.18.13/awx-operator-0.18.13.tgz
+    version: 0.18.13
+  - apiVersion: v2
     appVersion: 0.18.12
     created: "2022-02-18T00:56:11.72262899Z"
     description: A Helm chart for AWX Operator
@@ -41,4 +51,4 @@ entries:
     urls:
     - https://github.com/mamercad/awx-operator/releases/download/awx-operator-0.17.0/awx-operator-0.17.0.tgz
     version: 0.17.0
-generated: "2022-02-18T00:56:11.72265029Z"
+generated: "2022-02-18T01:12:21.091875962Z"
