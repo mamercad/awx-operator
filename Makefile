@@ -7,6 +7,7 @@ VERSION ?= $(shell git describe --tags)
 
 CONTAINER_CMD ?= docker
 
+# GNU vs BSD in-place sed
 ifeq ($(shell sed --version 2>/dev/null | grep -q GNU && echo gnu),gnu)
 	SED_I := sed -i
 else
@@ -46,6 +47,10 @@ BUNDLE_IMG ?= $(IMAGE_TAG_BASE)-bundle:v$(VERSION)
 # Image URL to use all building/pushing image targets
 IMG ?= $(IMAGE_TAG_BASE):$(VERSION)
 NAMESPACE ?= awx
+
+# Helm variables
+CHART_NAME ?= awx-operator
+CHART_DESCRIPTION ?= A Helm chart for the AWX Operator
 
 all: docker-build
 
@@ -110,7 +115,7 @@ ifeq (,$(shell which kustomize 2>/dev/null))
 	@{ \
 	set -e ;\
 	mkdir -p $(dir $(KUSTOMIZE)) ;\
-	curl -sSLo - https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/v3.8.7/kustomize_v3.8.7_$(OS)_$(ARCH).tar.gz | \
+	curl -sSLo - https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/v4.5.2/kustomize_v4.5.2_$(OS)_$(ARCH).tar.gz | \
 	tar xzf - -C bin/ ;\
 	}
 else
@@ -225,28 +230,26 @@ endif
 endif
 
 .PHONY: helm-chart
-helm-chart: helm kubectl-slice
+helm-chart: kustomize helm kubectl-slice
 	@echo "== KUSTOMIZE (image and namespace) =="
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
 	cd config/default && $(KUSTOMIZE) edit set namespace ${NAMESPACE}
 
 	@echo "== HELM =="
 	cd charts && \
-		$(HELM) create awx-operator --starter $(shell pwd)/.helm/starter
-	cd charts && \
-		$(SED_I) -e 's/version: 0.1.0/version: $(VERSION)/' awx-operator/Chart.yaml ;\
-		$(SED_I) -e 's/appVersion: 0.1.0/appVersion: "$(VERSION)"/' awx-operator/Chart.yaml ;\
-		$(SED_I) -e 's/A Helm chart for Kubernetes/A Helm chart for AWX Operator/' awx-operator/Chart.yaml
-	@cat charts/awx-operator/Chart.yaml
+		$(HELM) create awx-operator --starter $(shell pwd)/.helm/starter ;\
+		$(SED_I) -e 's/version: 0.1.0/version: $(VERSION)/' $(CHART_NAME)/Chart.yaml ;\
+		$(SED_I) -e 's/appVersion: 0.1.0/appVersion: "$(VERSION)"/' $(CHART_NAME)/Chart.yaml ;\
+		$(SED_I) -e 's/description: A Helm chart for Kubernetes/description: $(CHART_DESCRIPTION)/' $(CHART_NAME)/Chart.yaml
+	@cat charts/$(CHART_NAME)/Chart.yaml
 
 	@echo "== KUSTOMIZE (annotation) =="
-	cd config/manager && $(KUSTOMIZE) edit set annotation helm.sh/chart:awx-operator-$(VERSION)
-	cd config/default && $(KUSTOMIZE) edit set annotation helm.sh/chart:awx-operator-$(VERSION)
+	cd config/manager && $(KUSTOMIZE) edit set annotation helm.sh/chart:$(CHART_NAME)-$(VERSION)
+	cd config/default && $(KUSTOMIZE) edit set annotation helm.sh/chart:$(CHART_NAME)-$(VERSION)
 
 	@echo "== SLICE =="
 	$(KUSTOMIZE) build config/default | \
-		./bin/kubectl-slice --input-file=- \
-			--output-dir=charts/awx-operator/templates \
+		$(KUBECTL_SLICE) --input-file=- \
+			--output-dir=charts/$(CHART_NAME)/templates \
 			--sort-by-kind
-	@echo "Helm Chart $(VERSION)" > charts/awx-operator/templates/NOTES.txt
-	tree charts
+	@echo "Helm Chart $(VERSION)" > charts/$(CHART_NAME)/templates/NOTES.txt
