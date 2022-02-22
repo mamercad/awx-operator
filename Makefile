@@ -257,7 +257,7 @@ helm-chart: kustomize helm kubectl-slice yq
 		$(HELM) create awx-operator --starter $(shell pwd)/.helm/starter ;\
 		$(YQ) -i '.version = "$(VERSION)"' $(CHART_NAME)/Chart.yaml ;\
 		$(YQ) -i '.appVersion = "$(VERSION)" | .appVersion style="double"' $(CHART_NAME)/Chart.yaml ;\
-		$(YQ) -i '.description = "A Helm chart for the AWX Operator"' $(CHART_NAME)/Chart.yaml ;\
+		$(YQ) -i '.description = "$(CHART_DESCRIPTION)"' $(CHART_NAME)/Chart.yaml ;\
 
 	@cat charts/$(CHART_NAME)/Chart.yaml
 
