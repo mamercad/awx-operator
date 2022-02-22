@@ -229,8 +229,25 @@ HELM = $(shell which helm)
 endif
 endif
 
+.PHONY: yq
+YQ = $(shell pwd)/bin/yq
+helm: ## Download helm locally if necessary.
+ifeq (,$(wildcard $(YQ)))
+ifeq (,$(shell which yq 2>/dev/null))
+	@{ \
+	set -e ;\
+	mkdir -p $(dir $(HELM)) ;\
+	curl -sSLo - https://github.com/mikefarah/yq/releases/download/v4.20.2/yq_$(OS)_$(ARCH).tar.gz | \
+	tar xzf - -C bin/ yq_$(OS)_$(ARCH) ;\
+	mv bin/yq_$(OS)_$(ARCH) bin/yq ;\
+	}
+else
+YQ = $(shell which yq)
+endif
+endif
+
 .PHONY: helm-chart
-helm-chart: kustomize helm kubectl-slice
+helm-chart: kustomize helm kubectl-slice yq
 	@echo "== KUSTOMIZE (image and namespace) =="
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
 	cd config/default && $(KUSTOMIZE) edit set namespace ${NAMESPACE}
@@ -238,9 +255,10 @@ helm-chart: kustomize helm kubectl-slice
 	@echo "== HELM =="
 	cd charts && \
 		$(HELM) create awx-operator --starter $(shell pwd)/.helm/starter ;\
-		$(SED_I) -e 's/version: 0.1.0/version: $(VERSION)/' $(CHART_NAME)/Chart.yaml ;\
-		$(SED_I) -e 's/appVersion: 0.1.0/appVersion: "$(VERSION)"/' $(CHART_NAME)/Chart.yaml ;\
-		$(SED_I) -e 's/description: A Helm chart for Kubernetes/description: $(CHART_DESCRIPTION)/' $(CHART_NAME)/Chart.yaml
+		$(YQ) -i '.version = "$(VERSION)"' $(CHART_NAME)/Chart.yaml ;\
+		$(YQ) -i '.appVersion = "$(VERSION)" | .appVersion style="double"' $(CHART_NAME)/Chart.yaml ;\
+		$(YQ) -i '.description = "A Helm chart for the AWX Operator"' $(CHART_NAME)/Chart.yaml ;\
+
 	@cat charts/$(CHART_NAME)/Chart.yaml
 
 	@echo "== KUSTOMIZE (annotation) =="
