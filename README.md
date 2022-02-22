@@ -906,6 +906,30 @@ If you need to do an independent release of the operator, you can run the [Stage
 
 After the draft release is created, publish it and the [Promote AWX Operator image](https://github.com/ansible/awx-operator/blob/devel/.github/workflows/promote.yaml) will run, publishing the image to Quay.
 
+The [Helm release](https://github.com/ansible/awx-operator/blob/devel/.github/workflows/helm-release.yaml) workflow will create and publish the next release.
+The workflow uses the [Helm chart releaser](https://github.com/helm/chart-releaser-action) which leverages GitHub pages to host Helm repositories.
+
+```bash
+$ export VERSION="x.y.z"
+$ git checkout -b release/$VERSION
+$ make helm-chart
+$ git commit -am "Releasing ${VERSION}"
+$ git push origin release/$VERSION
+```
+
+Next, create a pull request for this new release.
+After the release pull request is merged into `devel`, create and push the new release tag.
+
+```bash
+$ export VERSION="x.y.z"
+$ git checkout devel
+$ git pull
+$ git tag $VERSION
+$ git push origin $VERSION
+```
+
+The [helm-release](https://github.com/ansible/awx-operator/blob/devel/.github/workflows/helm-release.yaml) GitHub action will bundle the assets and create a new release named `awx-operator-${VERSION}`.
+
 ## Author
 
 This operator was originally built in 2019 by [Jeff Geerling](https://www.jeffgeerling.com) and is now maintained by the Ansible Team
