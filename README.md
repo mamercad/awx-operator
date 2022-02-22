@@ -13,6 +13,7 @@ An [Ansible AWX](https://github.com/ansible/awx) operator for Kubernetes built w
    * [Usage](#usage)
       * [Basic Install on minikube (beginner or testing)](#basic-install-on-minikube-beginner-or-testing)
       * [Basic Install on existing cluster](#basic-install-on-existing-cluster)
+      * [Helm Install on existing cluster](#helm-install-on-existing-cluster)
       * [Admin user account configuration](#admin-user-account-configuration)
       * [Network and TLS Configuration](#network-and-tls-configuration)
          * [Service Type](#service-type)
@@ -212,6 +213,34 @@ git checkout {{ latest_released_version }} # replace variable by latest version 
 $ Deploy new AWX Operator
 export NAMESPACE=<Name of the namespace where your AWX instanse exists>
 make deploy
+```
+
+### Helm Install on existing cluster
+
+For those that wish to use [Helm](https://helm.sh/) to install the awx-operator to an existing K8s cluster:
+
+```bash
+$ helm repo add awx-operator https://ansible.github.io/awx-operator/
+"awx-operator" has been added to your repositories
+
+$ helm repo update
+Hang tight while we grab the latest from your chart repositories...
+...Successfully got an update from the "awx-operator" chart repository
+Update Complete. ⎈Happy Helming!⎈
+
+$ helm search repo awx-operator
+NAME                            CHART VERSION   APP VERSION     DESCRIPTION
+awx-operator/awx-operator       0.17.1          0.17.1          A Helm chart for the AWX Operator
+
+$ helm install my-awx-operator awx-operator/awx-operator
+NAME: my-awx-operator
+LAST DEPLOYED: Thu Feb 17 22:09:05 2022
+NAMESPACE: default
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+NOTES:
+Helm Chart 0.17.1
 ```
 
 ### Admin user account configuration
