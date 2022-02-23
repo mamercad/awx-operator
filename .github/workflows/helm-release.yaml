@@ -42,6 +42,7 @@ jobs:
           message: Adding Helm chart $VERSION
           cwd: ./charts/
           push: false
+          tag: "${{ github.ref_name }} --force"
         env:
           VERSION: ${{ github.ref_name }}
 
