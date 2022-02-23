@@ -62,6 +62,7 @@ jobs:
                --git-repo "$repo" \
                --token "${{ secrets.GITHUB_TOKEN }}" \
                --pages-branch $PAGES_BRANCH \
+               --index-path $INDEX_PATH \
                --charts-repo $CHART_URL \
                --push
           else
@@ -73,6 +74,7 @@ jobs:
           CHART_PATH: ./charts
           CHART_URL: https://mamercad.github.io/awx-operator/index.yaml
           PAGES_BRANCH: gh-pages
+          INDEX_PATH: index.yaml
           VERSION: ${{ github.ref_name }}
 
       # - name: Commit Helm chart
