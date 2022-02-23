@@ -16,8 +16,8 @@ jobs:
         uses: actions/checkout@v2
         # with:
         #   path: ./charts
-        with:
-          fetch-depth: 0
+        # with:
+        #   fetch-depth: 0
 
       - name: Configure Git
         run: |
@@ -44,7 +44,7 @@ jobs:
           message: "Adding Helm chart ${VERSION}"
           cwd: ./charts/
           push: false
-          tag: "${{ github.ref_name }}"
+          tag: "${{ github.ref_name }} --force"
         env:
           VERSION: ${{ github.ref_name }}
 
