@@ -1,11 +1,11 @@
 name: helm-release
 
 on:
-  # push:
-  #   branches: [helm2]
   push:
-    tags:
-      - '*'
+    branches: [helm2]
+  # push:
+  #   tags:
+  #     - '*'
 
 jobs:
   release:
@@ -44,7 +44,7 @@ jobs:
           message: "Adding Helm chart ${VERSION}"
           cwd: ./charts/
           push: false
-          tag: "${{ github.ref_name }} --force"
+          # tag: "${{ github.ref_name }} --force"
         env:
           VERSION: ${{ github.ref_name }}
 
