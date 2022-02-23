@@ -11,6 +11,6 @@ kind: Kustomization
 images:
 - name: controller
   newName: quay.io/ansible/awx-operator
-  newTag: 0.17.1
+  newTag: 0.17.2
 commonAnnotations:
-  helm.sh/chart: awx-operator-0.17.1
+  helm.sh/chart: awx-operator-0.17.2

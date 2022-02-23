@@ -1,9 +1,0 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  annotations:
-    helm.sh/chart: awx-operator-0.17.1
-  labels:
-    control-plane: controller-manager
-  name: awx
-

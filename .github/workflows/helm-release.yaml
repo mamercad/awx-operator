@@ -2,8 +2,7 @@ name: helm-release
 
 on:
   push:
-    branches:
-      - devel
+    branches: [helm2]
 
 jobs:
   release:
@@ -24,6 +23,10 @@ jobs:
         uses: azure/setup-helm@v1
         with:
           version: v3.7.1
+
+      - name: Create Helm chart
+        run: |
+          make helm-chart
 
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.3.0

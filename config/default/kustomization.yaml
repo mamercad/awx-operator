@@ -23,4 +23,4 @@ resources:
 - ../rbac
 - ../manager
 commonAnnotations:
-  helm.sh/chart: awx-operator-0.17.1
+  helm.sh/chart: awx-operator-0.17.2
