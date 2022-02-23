@@ -39,10 +39,12 @@ jobs:
       - name: Commit Helm chart
         uses: EndBug/add-and-commit@v8
         with:
-          message: Adding Helm chart $VERSION
+          author_name: "$GITHUB_ACTOR"
+          author_email: "$GITHUB_ACTOR@users.noreply.github.com"
+          message: "Adding Helm chart ${VERSION}"
           cwd: ./charts/
           push: false
-          tag: "${{ github.ref_name }} --force"
+          tag: "${{ github.ref_name }}"
         env:
           VERSION: ${{ github.ref_name }}
 
