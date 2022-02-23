@@ -1,11 +1,11 @@
 name: helm-release
 
 on:
-  # push:
-  #   branches: [helm2]
   push:
-    tags:
-      - '*'
+    branches: [helm2]
+  # push:
+  #   tags:
+  #     - '*'
 
 jobs:
   release:
