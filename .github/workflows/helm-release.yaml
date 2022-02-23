@@ -15,7 +15,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          fetch-depth: 0
+          path: ./charts
+        # with:
+        #   fetch-depth: 0
 
       - name: Configure Git
         run: |
@@ -31,6 +33,15 @@ jobs:
         run: |
           echo VERSION: $VERSION
           make helm-chart
+        env:
+          VERSION: ${{ github.ref_name }}
+
+      - name: Commit Helm chart
+        uses: EndBug/add-and-commit@v8
+        with:
+          message: Adding Helm chart $VERSION
+          cwd: ./charts/
+          push: false
         env:
           VERSION: ${{ github.ref_name }}
 
