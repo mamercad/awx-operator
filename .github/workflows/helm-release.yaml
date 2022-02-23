@@ -14,10 +14,10 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v2
-        with:
-          path: ./charts
         # with:
-        #   fetch-depth: 0
+        #   path: ./charts
+        with:
+          fetch-depth: 0
 
       - name: Configure Git
         run: |
