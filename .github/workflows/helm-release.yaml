@@ -36,6 +36,7 @@ jobs:
         env:
           VERSION: ${{ github.ref_name }}
 
+      # https://github.com/helm/chart-releaser-action/pull/96
       - name: Chart releaser
         run: |
           # Download chart releaser
@@ -60,6 +61,9 @@ jobs:
             # debugging
             git remote -v
             git branch -av
+            git remote rm origin
+            git remote add origin git@github.com:${owner}/${repo}.git
+            git fetch --all
             # Update index and push to github pages
             ./cr index \
                --owner "$owner" \
