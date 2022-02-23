@@ -1,11 +1,11 @@
 name: helm-release
 
 on:
-  push:
-    branches: [helm2]
   # push:
-  #   tags:
-  #     - '*'
+  #   branches: [helm2]
+  push:
+    tags:
+      - '*'
 
 jobs:
   release:
@@ -69,6 +69,7 @@ jobs:
           CR_VERSION: 1.3.0
           CR_CHECKSUM: baed2315a9bb799efb71d512c5198a2a3b8dcd139d7f22f878777cffcd649a37
           CHART_PATH: ./charts
+          VERSION: ${{ github.ref_name }}
 
       # - name: Commit Helm chart
       #   uses: EndBug/add-and-commit@v8
