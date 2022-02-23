@@ -61,8 +61,8 @@ jobs:
             # debugging
             git remote -v
             git branch -av
-            git remote rm origin
-            git remote add origin git@github.com:${owner}/${repo}.git
+            # git remote rm origin
+            # git remote add origin git@github.com:${owner}/${repo}.git
             git fetch --all
             # Update index and push to github pages
             ./cr index \
