@@ -46,10 +46,10 @@ jobs:
           owner=$(cut -d '/' -f 1 <<< "$GITHUB_REPOSITORY")
           exists=$(curl -s -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/$owner/$repo/releases/tags/$repo-${{ steps.fix_tag.outputs.tag }} -w %{http_code} -o /dev/null)
           if [[ $exists != "200" ]]; then
-            ls -l $CHART_PATH
+            ls -lR ${CHART_PATH}/${repo}
             echo "Creating release..."
             # package chart
-            ./cr package $CHART_PATH
+            ./cr package ${CHART_PATH}/${repo}
             # upload chart to github releases
             #./cr upload \
             #    --owner "$owner" \
