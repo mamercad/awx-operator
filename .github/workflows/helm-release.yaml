@@ -37,6 +37,7 @@ jobs:
           make helm-release
         env:
           VERSION: ${{ github.ref_name }}
+          CR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # # Reinventing the wheel if/until https://github.com/helm/chart-releaser-action/pull/96 is merged
       # - name: Release Helm chart
