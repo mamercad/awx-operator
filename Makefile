@@ -301,7 +301,7 @@ helm-release: cr helm-chart
 	$(CR) upload \
 		--owner "$(CHART_OWNER)" \
 		--git-repo "$(CHART_REPO)" \
-		--token "$(GITHUB_TOKEN)" \
+		--token "$(CR_TOKEN)" \
 		--skip-existing
 
 	@echo "== CHART RELEASER (httpsorigin) =="
@@ -312,7 +312,7 @@ helm-release: cr helm-chart
 	$(CR) index \
 		--owner "$(CHART_OWNER)" \
 		--git-repo "$(CHART_REPO)" \
-		--token "$(GITHUB_TOKEN)" \
+		--token "$(CR_TOKEN)" \
 		--pages-branch "$(CHART_BRANCH)" \
 		--index-path "./charts/$(CHART_INDEX)" \
 		--charts-repo "https://$(CHART_OWNER).github.io/$(CHART_REPO)/$(CHART_INDEX)" \
