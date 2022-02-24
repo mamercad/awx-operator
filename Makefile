@@ -51,6 +51,10 @@ NAMESPACE ?= awx
 # Helm variables
 CHART_NAME ?= awx-operator
 CHART_DESCRIPTION ?= A Helm chart for the AWX Operator
+CHART_OWNER ?= mamercad
+CHART_REPO ?= awx-operator
+CHART_BRANCH ?= gh-pages
+CHART_INDEX ?= index.yaml
 
 all: docker-build
 
@@ -246,6 +250,22 @@ YQ = $(shell which yq)
 endif
 endif
 
+PHONY: cr
+CR = $(shell pwd)/bin/cr
+cr: ## Download cr locally if necessary.
+ifeq (,$(wildcard $(CR)))
+ifeq (,$(shell which cr 2>/dev/null))
+	@{ \
+	set -e ;\
+	mkdir -p $(dir $(CR)) ;\
+	curl -sSLo - https://github.com/helm/chart-releaser/releases/download/v1.3.0/chart-releaser_1.3.0_$(OS)_$(ARCH).tar.gz | \
+	tar xzf - -C bin/ cr ;\
+	}
+else
+CR = $(shell which cr)
+endif
+endif
+
 .PHONY: helm-chart
 helm-chart: kustomize helm kubectl-slice yq
 	@echo "== KUSTOMIZE (image and namespace) =="
@@ -271,3 +291,30 @@ helm-chart: kustomize helm kubectl-slice yq
 			--output-dir=charts/$(CHART_NAME)/templates \
 			--sort-by-kind
 	@echo "Helm Chart $(VERSION)" > charts/$(CHART_NAME)/templates/NOTES.txt
+
+.PHONY: helm-release
+helm-release: cr helm-chart
+	$(CR) version
+	@echo "== CHART RELEASER (package) =="
+	$(CR) package ./charts/awx-operator
+	@echo "== CHART RELEASER (upload) =="
+	$(CR) upload \
+		--owner "$(CHART_OWNER)" \
+		--git-repo "$(CHART_REPO)" \
+		--token "$(GITHUB_TOKEN)" \
+		--skip-existing
+
+	@echo "== CHART RELEASER (httpsorigin) =="
+	git remote add httpsorigin "https://github.com/$(CHART_OWNER)/$(CHART_REPO).git"
+	git fetch --all
+
+	@echo "== CHART RELEASER (index) =="
+	$(CR) index \
+		--owner "$(CHART_OWNER)" \
+		--git-repo "$(CHART_REPO)" \
+		--token "$(GITHUB_TOKEN)" \
+		--pages-branch "$(CHART_BRANCH)" \
+		--index-path "./charts/$(CHART_INDEX)" \
+		--charts-repo "https://$(CHART_OWNER).github.io/$(CHART_REPO)/$(CHART_INDEX)" \
+		--remote httpsorigin \
+		--push
